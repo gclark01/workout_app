@@ -64,10 +64,10 @@ class form_data:
         if not df.empty:
             # Clean up Dataframe
             # Drop Index
-            user_data = user_data.drop(['id'], axis=1)
+            user_data = df.drop(['id'], axis=1)
             # Update Int to Bool
             dict = {0:False, 1:True}
-            user_data = user_data.replace({"fail": dict})
+            user_data = df.replace({"fail": dict})
         return user_data
 
 
