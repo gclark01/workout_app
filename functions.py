@@ -60,16 +60,14 @@ class form_data:
         with conn.session as s:
             sql_query = text('select * from data where datetime = :date and name = :name')
             result = s.execute(sql_query, {'date': dt.date.today(), 'name': st.session_state.name})
-            df = pd.DataFrame(result)
-            if len(df) > 0:
-                # Clean up Dataframe
-                # Drop Index
-                user_data = df.drop(['id'], axis=1)
-                # Update Int to Bool
-                dict = {0:False, 1:True}
-                user_data = df.replace({"fail": dict})
-                return user_data
-            else:
-                return 0
+        df = pd.DataFrame(result)
+        if len(df) > 0:
+            # Clean up Dataframe
+            # Drop Index
+            user_data = df.drop(['id'], axis=1)
+            # Update Int to Bool
+            dict = {0:False, 1:True}
+            user_data = df.replace({"fail": dict})
+            return user_data
 
     
