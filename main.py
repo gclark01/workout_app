@@ -28,7 +28,7 @@ class MultiApp:
                 menu_icon='battery-charging',
                 default_index=0,
                 styles={
-                    "container": {"padding": "5!important", "back icon":{"color": "white", "font-size": "23px"}},
+                    "container": {"padding": "5!important", "back icon":{"color": "black", "font-size": "23px"}},
                     "nav-link": {"color": "white", "font-size": "12px", "text-nav-selected":{"background-color": "#02AB21"}},
                     "menu-title": {"color": "white", "font-size": "15px"}
                     }
