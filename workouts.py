@@ -116,30 +116,23 @@ def app():
 
         # Get count of rows, to reduce / remove horizontal scroll bar
         user_data = func.form_data.get_user_data()
-        if not user_data.empty:
-            # Clean up Dataframe
-            # Drop Index
-            user_data = user_data.drop(['id'], axis=1)
-            # Update Int to Bool
-            dict = {0:False, 1:True}
-            user_data = user_data.replace({"fail": dict})
+              
+        rows = len(user_data.index) * 45
 
-            rows = len(user_data.index) * 45
-
-            # Format Dataframe Columns
-            st.dataframe(
-                user_data,
-                #height=rows,
-                column_config={
-                    "datetime": st.column_config.DateColumn("Date"),
-                    "name": "Lifter",
-                    "category": "Group",
-                    "exercise": "Exercise",
-                    "sets": "Set",
-                    "weight": "Weight",
-                    "superset": "Superset",
-                    "count": "Total",
-                    "fail": "Failed"
-                },
-                hide_index=True
-            )
+        # Format Dataframe Columns
+        st.dataframe(
+            user_data,
+            #height=rows,
+            column_config={
+                "datetime": st.column_config.DateColumn("Date"),
+                "name": "Lifter",
+                "category": "Group",
+                "exercise": "Exercise",
+                "sets": "Set",
+                "weight": "Weight",
+                "superset": "Superset",
+                "count": "Total",
+                "fail": "Failed"
+            },
+            hide_index=True
+        )
