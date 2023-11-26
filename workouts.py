@@ -116,7 +116,9 @@ def app():
 
         # Get count of rows, to reduce / remove horizontal scroll bar
         user_data = func.form_data.get_user_data()
-        if user_data.empty(False):
+        if user_data.empty:
+            None
+        else:
             # Clean up Dataframe
             # Drop Index
             user_data = user_data.drop(['id'], axis=1)
