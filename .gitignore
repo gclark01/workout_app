@@ -1,0 +1,4 @@
+# ignore directories
+misc/
+queries/
+.vscode/
