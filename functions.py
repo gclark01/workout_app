@@ -68,6 +68,6 @@ class form_data:
             # Update Int to Bool
             dict = {0:False, 1:True}
             user_data = df.replace({"fail": dict})
-        return user_data
+            return user_data
 
     
