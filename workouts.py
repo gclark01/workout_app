@@ -116,7 +116,7 @@ def app():
 
         # Get count of rows, to reduce / remove horizontal scroll bar
         user_data = func.form_data.get_user_data()
-        if user_data != 0:
+        if not user_data.empty():
             rows = len(user_data.index) * 45
 
             # Format Dataframe Columns
