@@ -21,6 +21,6 @@ def app():
             welcome = st.markdown(f"*Welcome*  :blue[{st.session_state.name}]")
             authenticator.logout("Logout", "sidebar")
 
-        st.subheader('Coach Adkision Workouts is a website created for users to manage workout progress')
+        st.subheader('Get Big Workouts is a website created for users to manage workout progress')
         st.markdown('Created by: [Geoff Clark](https://www.linkedin.com/in/geoff-clark-23a1b049/)')
         st.markdown('Contact via mail: [geoff.clark@hotmail.com]')

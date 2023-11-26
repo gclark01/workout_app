@@ -22,7 +22,7 @@ class MultiApp:
     def run():
         with st.sidebar:
             app = option_menu(
-                menu_title='Get Big Portal',
+                menu_title='Get Big Workouts',
                 options=['Home', 'Add Workout'],
                 icons=['house-fill', 'activity'],
                 menu_icon='battery-charging',
