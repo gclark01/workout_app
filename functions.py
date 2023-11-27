@@ -4,7 +4,7 @@ import datetime as dt
 from sqlalchemy import text
 
 # Create sql connection
-conn = st.connection('workout_db', type='sql')
+conn = st.connection('workout_db', type='sql', autocommit=True)
 
 class get_credentials:
     def fetch_users():
