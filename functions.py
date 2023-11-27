@@ -11,6 +11,7 @@ class get_credentials:
         with conn.session as s:
             sql_query = text("SELECT * FROM users")
             result = s.execute(sql_query)
+            s.commit()
             return result.all()
 
     def convert(list):
@@ -53,6 +54,7 @@ class form_data:
         with conn.session as s:
             sql_query = text("SELECT ex_type FROM exercises WHERE ex_group = :group")
             result = s.execute(sql_query, {"group": exercises})
+            s.commit()
             return [row[0] for row in result] 
 
     # Query and get Dataframe
