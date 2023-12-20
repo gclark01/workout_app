@@ -1,9 +1,7 @@
 import streamlit as st
 from google.cloud import firestore
-from google.cloud.firestore_v1.base_query import FieldFilter
 import pandas as pd
-from methods import workout_form as wf
-from methods import database as dbase
+
 
 
 # Authenticate to Firestore with the JSON account key.

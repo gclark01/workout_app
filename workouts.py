@@ -45,7 +45,7 @@ def app():
                 if states.get(state) == 'string':
                     st.session_state[state] = None
                 else: 
-                    st.session_state[state] = dt.datetime.today().date() #dt.datetime.today().strftime('%Y-%m-%d') #dt.datetime.today().isoformat()
+                    st.session_state[state] = dt.datetime.today().date()
         
         def form():
             # Create Entry Form
