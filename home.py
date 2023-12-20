@@ -1,11 +1,10 @@
 import streamlit as st
-import functions as func
+from methods import database as dbase
 import streamlit_authenticator as stauth
 
 def app():
-    credentials = func.get_credentials()
-
-    authenticator = stauth.Authenticate(credentials.cred_obj, "workout_app", "abcdef", cookie_expiry_days=30)
+    credentials = dbase.create_credentails()
+    authenticator = stauth.Authenticate(credentials, "workout_app", "abcdef", cookie_expiry_days=30)
 
     name, authentication_status, username = authenticator.login("Login", "main")
 

@@ -1,12 +1,14 @@
 import streamlit as st
-import functions as func
 import datetime as dt
 import streamlit_authenticator as stauth
+from methods import workout_form as wf
+from methods import database as dbase
+import pandas as pd
 
 def app():
-    credentials = func.get_credentials()
+    credentials = dbase.create_credentails()
 
-    authenticator = stauth.Authenticate(credentials.cred_obj, "workout_app", "abcdef", cookie_expiry_days=30)
+    authenticator = stauth.Authenticate(credentials, "workout_app", "abcdef", cookie_expiry_days=30)
 
     name, authentication_status, username = authenticator.login("Login", "main")
 
@@ -43,13 +45,13 @@ def app():
                 if states.get(state) == 'string':
                     st.session_state[state] = None
                 else: 
-                    st.session_state[state] = dt.datetime.now()
-      
+                    st.session_state[state] = dt.datetime.today().date() #dt.datetime.today().strftime('%Y-%m-%d') #dt.datetime.today().isoformat()
+        
         def form():
             # Create Entry Form
-            st.write("Enter your workout session details")
+            st.write("Enter your workout session details!")
 
-            date = st.date_input("Date of Session", format='MM/DD/YYYY', key='date')
+            date_value = st.date_input("Date of Session", key='date')
             exercise_group = st.selectbox(
                 'Select the exercise group',
                 ('Back', 'Biceps', 'Chest', 'Core', 'Legs', 'Shoulders', 'Triceps'),
@@ -60,11 +62,11 @@ def app():
 
             # Select Exercise
             if st.session_state.group != None:
-                ex_list = func.form_data.get_exercise(st.session_state.group.lower())
+                ex_list = wf.get_exercise(st.session_state.group.lower())
                 exercise = st.selectbox(
                     'Select Exercise', ex_list, index=None, placeholder='Select Exercise', key='exercise')
             else:
-                ex_list = func.form_data.get_exercise(None)
+                ex_list = wf.get_exercise(None)
                 exercise = st.selectbox(
                     'Select Exercise', ex_list, index=None, placeholder='Select Exercise', key='exercise')
             
@@ -75,10 +77,12 @@ def app():
             super_set = st.toggle('Was this a Superset', value=False, key='superset')
 
             # Weight
-            weight = st.select_slider('What was the weight of the lift?', options=range(10,351), key='weight')
+            #weight = st.select_slider('What was the weight of the lift?', options=range(10,351), key='weight')
+            weight = st.selectbox('What was the weight of the lift?', range(5,501,5), index=None, placeholder="Select a weight", key='weight')
             
             # Total
-            count = st.select_slider('What was the total number of reps', options=range(1,101), key='count')
+            #count = st.select_slider('What was the total number of reps', options=range(1,101), key='count')
+            reps = st.selectbox('What was the total number of reps', range(1,51), index=None, placeholder="Select number of reps completed", key='reps')
 
             # Fail Set
             fail = st.toggle('Did you fail the set?', value=False, key='fail')
@@ -86,19 +90,19 @@ def app():
             # Submit Button
             submit_results = None
             form_data = {
-                'datetime' : st.session_state.date,
+                'date' : date_value.strftime("%Y-%m-%d"),
                 'name' : st.session_state.name,
-                'category' : st.session_state.group,
-                'exercise' : st.session_state.exercise,
-                'sets' : st.session_state.set,
-                'weight' : st.session_state.weight,
-                'superset' : st.session_state.superset,
-                'count' : st.session_state.count,
-                'fail' : st.session_state.fail
+                'category' : exercise_group ,
+                'exercise' : exercise,
+                'sets' : sets,
+                'weight' : weight,
+                'superset' : super_set,
+                'reps' : reps,
+                'fail' : fail
             }
             col1, col2 = st.columns([1,1])
             with col1:
-                if st.button("Submit", kwargs=form_data, on_click=func.form_data.insert_data):
+                if st.button("Submit", kwargs=form_data, on_click=wf.add_data):
                     submit_results = True
                     #st.markdown(":green[Your workout was successfully recorded!]")
             with col2:
@@ -114,25 +118,34 @@ def app():
         # Main
         form()
 
+    
         # Get count of rows, to reduce / remove horizontal scroll bar
-        user_data = func.form_data.get_user_data()
-        if not user_data.empty:   
-            rows = len(user_data.index) * 45
+        user_data = wf.get_data(st.session_state.name)
+        if bool(user_data): 
+
+            # Convert List to DataFrame
+            df = pd.DataFrame(user_data)
+
+            # Order Columns
+            df = df.loc[:,['date', 'name', 'category', 'exercise', 'sets', 'weight', 'superset', 'reps', 'fail']]
+
+            # Filter DataFrame to only show values for today
+            df= df[df['date'] == dt.datetime.today().strftime("%Y-%m-%d")]
 
             # Format Dataframe Columns
             st.dataframe(
-                user_data,
-                #height=rows,
+                df,
                 column_config={
-                    "datetime": st.column_config.DateColumn("Date"),
+                    "date": "Date",
                     "name": "Lifter",
                     "category": "Group",
                     "exercise": "Exercise",
                     "sets": "Set",
                     "weight": "Weight",
                     "superset": "Superset",
-                    "count": "Total",
+                    "reps": "Total",
                     "fail": "Failed"
                 },
-                hide_index=True
+                hide_index=True,
+                use_container_width=True
             )
