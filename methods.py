@@ -1,5 +1,6 @@
 import streamlit as st
 from google.cloud import firestore
+from google.cloud.firestore_v1.base_query import FieldFilter
 from google.oauth2 import service_account
 import json
 
@@ -56,14 +57,23 @@ class workout_form:
             "fail": kwargs["fail"]
         })
 
-    def get_exercise(group):
+    def get_exercise(*args):
         """ Method to get a list of exercises based on group """
+
+        # Create List from args
+        group_list= []
+        if args[0] != None:
+            for tup in args:
+                for lst in tup:
+                    group_list.append(lst)
+        else:
+            group_list.append("Empty")
 
         # Get collection Exercises
         docs = db.collection("exercises")
 
         # Filter by group
-        results = docs.where(filter=firestore.FieldFilter("group", "==", group)).stream()
+        results = docs.where(filter=FieldFilter("group", "in", group_list)).stream()
 
         # Create list of dictionary items
         items = list(map(lambda x: {**x.to_dict(), 'id': x.id}, results))
