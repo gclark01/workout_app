@@ -2,8 +2,6 @@ import streamlit as st
 from google.cloud import firestore
 import pandas as pd
 
-
-
 # Authenticate to Firestore with the JSON account key.
 db = firestore.Client.from_service_account_json(".\\keys\\firestore-key.json")
 
