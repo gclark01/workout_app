@@ -3,6 +3,8 @@ from google.cloud import firestore
 from google.cloud.firestore_v1.base_query import FieldFilter
 from google.oauth2 import service_account
 import json
+import pandas as pd
+import numpy as np
 
 # Authenticate to Firestore with the JSON account key.
 #db = firestore.Client.from_service_account_json(".\\keys\\firestore-key.json")
@@ -56,6 +58,43 @@ class workout_form:
             "reps": int(kwargs["reps"]),
             "fail": kwargs["fail"]
         })
+
+    def add_data_new(df: pd.DataFrame, key):
+            
+        # Extract the list of dictionaries from st.session_state
+        edited_rows = st.session_state[key]["edited_rows"]
+
+        # Get the weight values from the dictionary
+        weight_values = [int(edited_rows[i]["Weight"]) for i in range(len(edited_rows))]
+
+        # Get the rep values from the dictionary
+        rep_values = [int(edited_rows[i]["Reps"]) for i in range(len(edited_rows))]
+
+        # Loop through each row in the DataFrame and update the columns
+        for i, index in enumerate(df.index):
+            df.at[index, "Weight"] = weight_values[i % len(weight_values)]
+            df.at[index, "Reps"] = rep_values[i % len(rep_values)]
+
+        # Write to database
+        results = df.to_dict("index")
+        for item in results:
+            data = results[item]
+
+            date = data["Date"].strftime("%Y-%m-%d")
+
+            docs = db.collection("data").document()
+            docs.set({
+                "timestamp": firestore.SERVER_TIMESTAMP,
+                "date": date,
+                "name": data["Lifter"],
+                "category": data["Exercise Group"],
+                "exercise": data["Exercise"],
+                "sets": int(data["Set"]),
+                "weight": int(data["Weight"]),
+                "superset": data["Superset"],
+                "reps": int(data["Reps"]),
+                "fail": data["Failed"]
+            })
 
     def get_exercise(*args):
         """ Method to get a list of exercises based on group """

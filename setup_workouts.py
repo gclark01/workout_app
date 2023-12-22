@@ -7,7 +7,7 @@ from itertools import product
 import numpy as np
 import datetime as dt
 
-st.session_state
+#st.session_state
 
 # Function to update editor
 def callback(**kwargs):
@@ -64,8 +64,6 @@ for doc in docs:
             ex_group[exercise_group] = [exercise_type]
 
 # Create Combo List
-#combinations = [(lifter, group, exercise, sets, np.nan, np.nan, np.nan, np.nan) for lifter, exercise in product(lifters, selectEx) for group, exercises in ex_group.items() if exercise in exercises]
-
 combinations = [
     (dt.datetime.today().date(), lifter, group, exercise, set_num, False, np.nan, np.nan, False)
     for lifter, exercise, group in product(lifters, selectEx, ex_group.keys())
@@ -73,32 +71,32 @@ combinations = [
     if exercise in ex_group[group]
 ]
 
-# Create a pandas DataFrame with empty columns
+# Create a pandas DataFrame
 df = pd.DataFrame(columns=["Date", "Lifter", "Exercise Group", "Exercise", "Set", "Superset", "Weight", "Reps", "Failed"])
 
 # Add the combinations to the DataFrame
 df = pd.concat([df, pd.DataFrame(combinations, columns=df.columns)], ignore_index=True)
 
+
 # Display the DataFrame
 for lifter in lifters:
-    with st.container():
         st.markdown(
             f'''
             Lifter: :blue[{lifter}] | Date: :blue[{dt.datetime.today().date()}]
             '''
                     )
         for group in groups:
-            with st.container():
-                st.markdown(
-                    f'''
-                    Exercise Group: :blue[{group}]
-                    '''
-                            )
-                df_mod = (df
-                  .where(df["Lifter"] == lifter)
-                  .where(df["Exercise Group"] == group)
-                  .dropna(how='all'))
-                st.data_editor(
+            st.markdown(
+                f'''
+                Exercise Group: :blue[{group}]
+                '''
+                        )
+            df_mod = (df
+            .where(df["Lifter"] == lifter)
+            .where(df["Exercise Group"] == group)
+            .dropna(how='all'))
+            with st.form(f"form_{lifter}_{group}"):
+                edited_data = st.data_editor(
                     df_mod,
                     column_config={
                                     "Date": None,
@@ -114,6 +112,12 @@ for lifter in lifters:
                     num_rows="dynamic",
                     key=f"lifter_{lifters.index(lifter)}_{groups.index(group)}",
                     use_container_width=False, 
-                    on_change=callback,
-                    kwargs=({"state_key" : f"lifter_{lifters.index(lifter)}_{groups.index(group)}"}),
                     hide_index=True)
+
+                updated_data = edited_data
+                submit_button = st.form_submit_button(f"Record Data for {group}", on_click=wf.add_data_new, args=(updated_data, f"lifter_{lifters.index(lifter)}_{groups.index(group)}", ))
+
+                if submit_button:
+                    st.info("Successfully saved results")
+                    
+            
