@@ -54,9 +54,9 @@ class workout_form:
             "exercise": kwargs["exercise"],
             "sets": int(kwargs["sets"]),
             "weight": int(kwargs["weight"]),
-            "superset": kwargs["superset"],
+            "superset": bool(kwargs["superset"]),
             "reps": int(kwargs["reps"]),
-            "fail": kwargs["fail"]
+            "fail": bool(kwargs["failed"])
         })
 
     def add_data_new(df: pd.DataFrame, key):
@@ -64,16 +64,32 @@ class workout_form:
         # Extract the list of dictionaries from st.session_state
         edited_rows = st.session_state[key]["edited_rows"]
 
+        # Ensure key is present with the correct value
+        for i in range(len(edited_rows)):
+            if "Failed" not in edited_rows[i]:
+                # If key is not present, add it with a default value of False
+                edited_rows[i].update({"Failed": False})
+            if "Superset" not in edited_rows[i]:
+                edited_rows[i].update({"Superset": False})
+
         # Get the weight values from the dictionary
         weight_values = [int(edited_rows[i]["Weight"]) for i in range(len(edited_rows))]
 
         # Get the rep values from the dictionary
         rep_values = [int(edited_rows[i]["Reps"]) for i in range(len(edited_rows))]
 
+        # Get the Superset values from the dictionary
+        superset_values = [bool(edited_rows[i]["Superset"]) for i in range(len(edited_rows))]
+
+        # Get the Failed values from the dictionary
+        fail_values = [bool(edited_rows[i]["Failed"]) for i in range(len(edited_rows))]
+
         # Loop through each row in the DataFrame and update the columns
         for i, index in enumerate(df.index):
             df.at[index, "Weight"] = weight_values[i % len(weight_values)]
             df.at[index, "Reps"] = rep_values[i % len(rep_values)]
+            df.at[index, "Superset"] = superset_values[i % len(superset_values)]
+            df.at[index, "Failed"] = fail_values[i % len(fail_values)]
 
         # Write to database
         results = df.to_dict("index")
@@ -101,29 +117,45 @@ class workout_form:
 
         # Create List from args
         group_list= []
-        if args[0] != None:
+        if args[0] is not None:
             for tup in args:
                 for lst in tup:
                     group_list.append(lst)
-        else:
-            group_list.append("Empty")
 
         # Get collection Exercises
         docs = db.collection("exercises")
 
-        # Filter by group
-        results = docs.where(filter=FieldFilter("group", "in", group_list)).stream()
+        # Filter by group only if group_list is not empty
+        if group_list:
+            results = docs.where("group", "in", group_list).stream()
+        else:
+            results = []
 
-        # Create list of dictionary items
-        items = list(map(lambda x: {**x.to_dict(), 'id': x.id}, results))
+        # Create dictionary to store exercises organized by group
+        exercises_by_group = {}
 
-        # Create a list to return unique values
-        res_list = []
-        for item in items:
-            res_list.append(item['type'])
-        type = list(set(res_list))
-        type.sort()
-        return type
+        # Populate the dictionary
+        for result in results:
+            exercise_data = result.to_dict()
+            group = exercise_data.get('group', 'Unknown')
+            exercise_name = exercise_data.get('type', 'Unknown')
+
+            if group not in exercises_by_group:
+                exercises_by_group[group] = []
+
+            exercises_by_group[group].append(exercise_name)
+
+        # Sort the groups and exercises
+        for group, exercises_list in exercises_by_group.items():
+            exercises_list.sort()
+
+        # Build the list of strings
+        formatted_strings = []
+        for group, exercises_list in exercises_by_group.items():
+            formatted_strings.append(f"---- {group} ----")
+            formatted_strings.extend(exercises_list)
+
+        return formatted_strings
 
     def get_data(name):
         """ Method to get a list of users data """
